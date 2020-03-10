@@ -1,0 +1,123 @@
+from random import randrange
+from tkinter import *
+
+def voisins(n, l, i, j):
+    return [(a,b) for (a, b) in [(i, j+1),(i, j-1), (i-1, j), (i+1,j), (i+1, j+1), (i+1, j-1), (i-1, j+1), (i-1, j-1)] if a in range(n) and b in range(l)]
+
+def ListeNulle(n, l):
+    L=[]
+    for i in range(n):
+        L.append([0])
+        for j in range(l):
+            L[i].append(0)
+    return L
+
+def afficher(L):
+    for i in L:
+        for y in i:
+            print(y, end = " ")
+        print()
+        
+def placerChiffres(L, i, y):
+    n = len(L)
+    l = len(L[0])
+    for k in range(len(voisins(n, l, i, y))):
+        L[voisins(n, l, i, y)[k][0]][voisins(n, l, i, y)[k][1]] += 1
+    return L
+        
+
+def placerMines(L, n, l):  #L = liste de mine
+    global compteurMine
+    for i in range(0,n):
+        L.append([])
+        for y in range(0,l):
+            k = randrange(0, 100)
+            if(k >= d):
+                L[i].append(0)
+            else:
+                L[i].append(1)
+                placerChiffres(chiffres, i, y)
+                compteurMine+=1
+    return L
+
+def placerDrapeau(drapeau, x, y):
+    drapeau[x][y] = 1
+    return drapeau
+
+def placerDrapeau(cases, x, y): #Ici on verifira si on perds ou non
+    cases[x][y] = 1
+    return cases
+
+def redemarrer(n, l):
+    mines = []
+    chiffres = ListeNulle(n, l)
+    cases = ListeNulle(n, l)
+    drapeau = ListeNulle(n, l)
+    compteurMine = 0
+    placerMines(mines, n, l)
+    creer(mines, chiffres)
+    
+def changerDifficulte1():
+    redemarrer(9, 9)
+    jeu.geometry("270x270")
+
+def changerDifficulte2():
+    redemarrer(16, 16)
+    jeu.geometry("480x480")  #pour les 3 il faut regler le bug avec les chiffres
+
+def changerDifficulte3():
+    redemarrer(16, 30)
+    jeu.geometry("480x900")
+
+def creer(mines, chiffres):
+    cnv.delete(ALL)
+    n = len(mines)
+    l = len(mines[0])
+    for i in range(n):
+        for y in range(l):
+            cnv.create_rectangle(y*t, i*t, y*t+t, i*t+t, fill = "grey")
+            if mines[i][y] == 1:
+                cases = cnv.create_rectangle(y*t, i*t, y*t+t, i*t+t, fill = "black")
+
+
+def decouvrir(x, y):
+    for k in range(len(voisins(n, l, x, y))):
+            b = voisins(n, l, x, y)[k-1][0]
+            a = voisins(n, l, x, y)[k-1][1]
+            cnv.create_rectangle(a*t, b*t, a*t+t, b*t+t, fill = "white")
+            txt = cnv.create_text(a*t+(t//2), b*t+(t//2),text = str(chiffres[b][a]), fill = "black", font = "Ubuntu")
+            cases[b][a] == 1
+            #bug a regler
+
+def clic(event):
+    y = event.x // 30
+    x = event.y // 30
+    if(mines[x][y] == 0):
+        cnv.create_rectangle(y*t, x*t, y*t+t, x*t+t, fill = "white")
+        txt = cnv.create_text(y*t+(t//2), x*t+(t//2),text = str(chiffres[x][y]), fill = "black", font = "Ubuntu")
+        cases[x][y] == 1
+    if(chiffres[x][y] == 0):
+        decouvrir(x, y)
+        
+        
+jeu = Tk()
+
+n = 10 #lignes
+l = 10 #collones
+mines = [] #liste des mines
+chiffres = ListeNulle(n, l) #liste des chiffres
+cases = ListeNulle(n, l) #cases decouverte ou non
+drapeau = ListeNulle(n, l) #drapeau placé ou non
+d = 10 #densité
+compteurMine = 0 #compteur
+t = 30 #taille des cases
+
+cnv = Canvas(jeu, width = l * t, height = n * t)
+cnv.pack()
+            
+placerMines(mines, n, l)
+creer(mines, chiffres)
+
+cnv.bind("<Button-1>", clic)
+
+jeu.mainloop()
